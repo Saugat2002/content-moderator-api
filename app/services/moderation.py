@@ -1,60 +1,50 @@
-from typing import Dict, Any
-import httpx
-from app.core.config import get_settings
+from typing import Dict, Any, cast
+import logging
+from .sentiment import SentimentAnalyzer
+from .cache import CacheService
 
-settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 class ModerationService:
-    def __init__(self):
-        self.threshold = settings.MODEL_THRESHOLD
-        self.positive_words = settings.POSITIVE_WORDS
-        self.negative_words = settings.NEGATIVE_WORDS
-        self.toxic_words = settings.TOXIC_WORDS
+    def __init__(self, cache_service: CacheService):
+        self.cache_service = cache_service
+        self.sentiment_analyzer = SentimentAnalyzer()
+        logger.info("Initialized ModerationService")
 
     async def analyze_text(self, text: str) -> Dict[str, Any]:
         """
-        Analyze text for toxicity and sentiment.
-        This is a simplified version that could be replaced with a real AI service.
+        Analyze text for sentiment and toxicity using BERT.
         """
-        # Simulate AI analysis
-        # In a real implementation, this would call an external AI service
-        toxicity_score = self._calculate_toxicity(text)
-        sentiment_score = self._calculate_sentiment(text)
+        try:
+            # Check cache first
+            cache_key = f"analysis:{text}"
+            cached_result = await self.cache_service.get(cache_key)
+            if cached_result:
+                logger.info("Retrieved analysis from cache")
+                return cached_result
 
-        return {
-            "toxicity_score": toxicity_score,
-            "is_toxic": toxicity_score > self.threshold,
-            "sentiment_score": sentiment_score,
-            "sentiment": (
-                "positive"
-                if sentiment_score > 0.5
-                else "negative"
-                if sentiment_score < 0.3
-                else "neutral"
-            ),
-        }
+            # Perform sentiment analysis
+            sentiment_result = self.sentiment_analyzer.analyze_sentiment(text)
 
-    def _calculate_toxicity(self, text: str) -> float:
-        """
-        Calculate toxicity score based on predefined toxic words.
-        """
-        text_lower = text.lower()
-        score = sum(1 for word in self.toxic_words if word in text_lower) / len(
-            self.toxic_words
-        )
-        return min(score, 1.0)
+            sentiment_score: float = cast(float, sentiment_result["sentiment_score"])
 
-    def _calculate_sentiment(self, text: str) -> float:
-        """
-        Calculate sentiment score based on predefined positive and negative words.
-        """
-        text_lower = text.lower()
-        positive_score = sum(1 for word in self.positive_words if word in text_lower)
-        negative_score = sum(1 for word in self.negative_words if word in text_lower)
+            # Prepare response
+            result = {
+                "sentiment_score": sentiment_score,
+                "sentiment": self.sentiment_analyzer.get_sentiment_label(
+                    sentiment_score
+                ),
+                "confidence": sentiment_result["confidence"],
+                "raw_scores": sentiment_result["raw_scores"],
+            }
 
-        total = positive_score + negative_score
-        if total == 0:
-            return 0.5  # neutral
+            # Cache the result
+            await self.cache_service.set(cache_key, result)
+            logger.info("Analysis completed and cached")
 
-        return positive_score / total
+            return result
+
+        except Exception as e:
+            logger.error(f"Error in text analysis: {str(e)}")
+            raise

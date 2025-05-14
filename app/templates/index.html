@@ -11,28 +11,43 @@
             padding: 15px;
             border-radius: 5px;
         }
-        .positive {
+        .very-positive {
             background-color: #d4edda;
             border: 1px solid #c3e6cb;
+        }
+        .positive {
+            background-color: #d1e7dd;
+            border: 1px solid #badbcc;
+        }
+        .neutral {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
         }
         .negative {
             background-color: #f8d7da;
             border: 1px solid #f5c6cb;
         }
-        .neutral {
-            background-color: #e2e3e5;
-            border: 1px solid #d6d8db;
+        .very-negative {
+            background-color: #dc3545;
+            border: 1px solid #bd2130;
+            color: white;
         }
         .score-bar {
             height: 20px;
             border-radius: 10px;
             margin: 5px 0;
         }
-        .toxicity-bar {
-            background-color: #dc3545;
-        }
         .sentiment-bar {
             background-color: #28a745;
+        }
+        .confidence-bar {
+            background-color: #17a2b8;
+        }
+        .raw-scores {
+            margin-top: 15px;
+        }
+        .raw-score-item {
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -57,16 +72,20 @@
                 <div id="result" class="result-box" style="display: none;">
                     <h3>Analysis Results</h3>
                     <div class="mb-3">
-                        <h5>Toxicity Score</h5>
-                        <div class="score-bar toxicity-bar" id="toxicityBar"></div>
-                        <p id="toxicityScore"></p>
-                    </div>
-                    <div class="mb-3">
                         <h5>Sentiment Score</h5>
                         <div class="score-bar sentiment-bar" id="sentimentBar"></div>
                         <p id="sentimentScore"></p>
                     </div>
-                    <div id="sentimentClass"></div>
+                    <div class="mb-3">
+                        <h5>Confidence</h5>
+                        <div class="score-bar confidence-bar" id="confidenceBar"></div>
+                        <p id="confidenceScore"></p>
+                    </div>
+                    <div id="sentimentClass" class="alert mb-3"></div>
+                    <div class="raw-scores">
+                        <h5>Detailed Scores</h5>
+                        <div id="rawScores"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -97,15 +116,32 @@
 
                 // Update UI with results
                 document.getElementById('result').style.display = 'block';
-                document.getElementById('toxicityBar').style.width = `${result.toxicity_score * 100}%`;
-                document.getElementById('sentimentBar').style.width = `${result.sentiment_score * 100}%`;
-                document.getElementById('toxicityScore').textContent = `Toxicity: ${(result.toxicity_score * 100).toFixed(1)}%`;
-                document.getElementById('sentimentScore').textContent = `Sentiment: ${(result.sentiment_score * 100).toFixed(1)}%`;
 
+                // Update sentiment score
+                const sentimentScore = (result.sentiment_score + 1) / 2; // Convert from [-1,1] to [0,1]
+                document.getElementById('sentimentBar').style.width = `${sentimentScore * 100}%`;
+                document.getElementById('sentimentScore').textContent =
+                    `Sentiment: ${(sentimentScore * 100).toFixed(1)}%`;
+
+                // Update confidence
+                document.getElementById('confidenceBar').style.width = `${result.confidence * 100}%`;
+                document.getElementById('confidenceScore').textContent =
+                    `Confidence: ${(result.confidence * 100).toFixed(1)}%`;
+
+                // Update sentiment class
                 const sentimentClass = document.getElementById('sentimentClass');
                 sentimentClass.textContent = `Overall Sentiment: ${result.sentiment}`;
-                sentimentClass.className = `alert ${result.sentiment === 'positive' ? 'alert-success' :
-                                          result.sentiment === 'negative' ? 'alert-danger' : 'alert-secondary'}`;
+                sentimentClass.className = `alert ${result.sentiment}`;
+
+                // Update raw scores
+                const rawScoresDiv = document.getElementById('rawScores');
+                rawScoresDiv.innerHTML = '';
+                for (const [label, score] of Object.entries(result.raw_scores)) {
+                    const scoreDiv = document.createElement('div');
+                    scoreDiv.className = 'raw-score-item';
+                    scoreDiv.textContent = `${label}: ${(score * 100).toFixed(1)}%`;
+                    rawScoresDiv.appendChild(scoreDiv);
+                }
 
             } catch (error) {
                 alert('Error: ' + error.message);
