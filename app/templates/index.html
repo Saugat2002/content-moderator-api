@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Moderator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .positive {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .negative {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .neutral {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+        }
+        .score-bar {
+            height: 20px;
+            border-radius: 10px;
+            margin: 5px 0;
+        }
+        .toxicity-bar {
+            background-color: #dc3545;
+        }
+        .sentiment-bar {
+            background-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Content Moderator</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form id="analysisForm" class="mb-4">
+                    <div class="mb-3">
+                        <label for="text" class="form-label">Enter text to analyze:</label>
+                        <textarea class="form-control" id="text" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="apiKey" class="form-label">API Key:</label>
+                        <input type="password" class="form-control" id="apiKey" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Analyze</button>
+                </form>
+
+                <div id="result" class="result-box" style="display: none;">
+                    <h3>Analysis Results</h3>
+                    <div class="mb-3">
+                        <h5>Toxicity Score</h5>
+                        <div class="score-bar toxicity-bar" id="toxicityBar"></div>
+                        <p id="toxicityScore"></p>
+                    </div>
+                    <div class="mb-3">
+                        <h5>Sentiment Score</h5>
+                        <div class="score-bar sentiment-bar" id="sentimentBar"></div>
+                        <p id="sentimentScore"></p>
+                    </div>
+                    <div id="sentimentClass"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const text = document.getElementById('text').value;
+            const apiKey = document.getElementById('apiKey').value;
+
+            try {
+                const response = await fetch('/api/v1/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Analysis failed');
+                }
+
+                const result = await response.json();
+
+                // Update UI with results
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('toxicityBar').style.width = `${result.toxicity_score * 100}%`;
+                document.getElementById('sentimentBar').style.width = `${result.sentiment_score * 100}%`;
+                document.getElementById('toxicityScore').textContent = `Toxicity: ${(result.toxicity_score * 100).toFixed(1)}%`;
+                document.getElementById('sentimentScore').textContent = `Sentiment: ${(result.sentiment_score * 100).toFixed(1)}%`;
+
+                const sentimentClass = document.getElementById('sentimentClass');
+                sentimentClass.textContent = `Overall Sentiment: ${result.sentiment}`;
+                sentimentClass.className = `alert ${result.sentiment === 'positive' ? 'alert-success' :
+                                          result.sentiment === 'negative' ? 'alert-danger' : 'alert-secondary'}`;
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
