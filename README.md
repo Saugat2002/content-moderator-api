@@ -1,107 +1,187 @@
 # AI-Powered Content Moderator API
 
-A FastAPI-based microservice that analyzes text content for toxicity, profanity, and sentiment, helping content platforms maintain healthy online environments.
+A FastAPI-based content moderation service that analyzes text for toxicity and sentiment using AI models. The service includes a web interface for easy interaction and follows 12-Factor principles for cloud-native deployment.
 
 ## Features
 
-- Text analysis endpoints for toxicity detection, sentiment analysis, and content categorization
-- Configurable moderation thresholds via environment variables
-- Rate limiting and API key authentication
-- Comprehensive logging of moderation decisions
-- Redis caching layer for improved performance
+- **Text Analysis**
+  - Toxicity detection
+  - Sentiment analysis
+  - Configurable moderation thresholds
+  - Real-time analysis results
 
-## Project Structure
+- **Web Interface**
+  - User-friendly dashboard
+  - Visual score representation
+  - Real-time analysis feedback
+  - Responsive design
+
+- **Technical Features**
+  - FastAPI framework
+  - Redis caching
+  - API key authentication
+  - Comprehensive logging
+  - Docker support
+  - CI/CD pipeline
+  - Type hints and validation
+  - Pre-commit hooks
+
+## Prerequisites
+
+- Python 3.11+
+- Redis server
+- Docker (optional)
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd content-moderator
+```
+
+2. Create and activate a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+4. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+## Running the Application
+
+### Development Mode
+
+1. Start the FastAPI server:
+```bash
+uvicorn app.main:app --reload
+```
+
+2. Access the web interface:
+- Open http://localhost:8000 in your browser
+- Enter your API key and text to analyze
+- View real-time analysis results
+
+3. API Documentation:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+### Docker Deployment
+
+1. Build the Docker image:
+```bash
+docker build -t content-moderator .
+```
+
+2. Run the container:
+```bash
+docker run -p 8000:8000 content-moderator
+```
+
+## Testing
+
+### Running Tests
+
+1. Install test dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Run the test suite:
+```bash
+pytest -v
+```
+
+### Code Quality
+
+1. Install pre-commit hooks:
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+2. Run linting:
+```bash
+black .
+mypy .
+```
+
+## API Usage
+
+### Authentication
+
+All API requests require an API key in the `X-API-Key` header.
+
+### Endpoints
+
+- `POST /api/v1/analyze`
+  - Analyzes text for toxicity and sentiment
+  - Request body: `{"text": "string"}`
+  - Response: Analysis results with toxicity and sentiment scores
+
+## Web Interface
+
+The web interface provides:
+- Text input area for content analysis
+- API key authentication
+- Visual representation of analysis results:
+  - Toxicity score bar
+  - Sentiment score bar
+  - Overall sentiment classification
+  - Color-coded results
+
+## Development
+
+### Project Structure
 
 ```
-.
+content-moderator/
 ├── app/
 │   ├── api/
-│   │   ├── __init__.py
-│   │   ├── routes.py
-│   │   └── dependencies.py
+│   │   └── routes.py
 │   ├── core/
-│   │   ├── __init__.py
 │   │   ├── config.py
-│   │   └── security.py
+│   │   └── logging.py
 │   ├── services/
-│   │   ├── __init__.py
 │   │   ├── moderation.py
 │   │   └── cache.py
+│   ├── templates/
+│   │   └── index.html
 │   └── main.py
 ├── tests/
-│   ├── __init__.py
 │   └── test_moderation.py
 ├── .env.example
-├── .gitignore
+├── .pre-commit-config.yaml
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
 └── README.md
 ```
 
-## Prerequisites
+### Adding New Features
 
-- Python 3.8+
-- Docker and Docker Compose
-- Redis (handled by Docker Compose)
+1. Create new routes in `app/api/routes.py`
+2. Add corresponding services in `app/services/`
+3. Write tests in `tests/`
+4. Update documentation
 
-## Environment Variables
+## Contributing
 
-Create a `.env` file based on `.env.example`:
-
-```bash
-API_KEY=your_api_key_here
-MODEL_THRESHOLD=0.7
-REDIS_URL=redis://redis:6379/0
-```
-
-## Running Locally
-
-1. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Run the application:
-```bash
-uvicorn app.main:app --reload
-```
-
-## Running with Docker
-
-1. Build and start the containers:
-```bash
-docker-compose up --build
-```
-
-2. The API will be available at `http://localhost:8000`
-
-## API Documentation
-
-Once the application is running, visit:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-
-## Testing
-
-Run tests using pytest:
-```bash
-pytest
-```
-
-## Development
-
-- The project uses pre-commit hooks for code quality
-- GitHub Actions workflow for CI/CD
-- Code formatting with black
-- Type checking with mypy
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the LICENSE file for details.
