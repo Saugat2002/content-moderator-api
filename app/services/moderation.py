@@ -27,19 +27,18 @@ class ModerationService:
             # Perform sentiment analysis
             analysis_result = self.sentiment_analyzer.analyze_sentiment(text)
 
-            sentiment_score: float = cast(float, analysis_result["sentiment_score"])
-            confidence: float = cast(float, analysis_result["confidence"])
-            dominant_emotion: str = cast(str, analysis_result["dominant_emotion"])
-            raw_scores: Dict[str, float] = cast(
-                Dict[str, float], analysis_result["raw_scores"]
+            # Get sentiment label
+            sentiment_label = self.sentiment_analyzer.get_sentiment_label(
+                cast(float, analysis_result["sentiment_score"])
             )
 
             # Prepare response
             result = {
-                "sentiment_score": sentiment_score,
-                "confidence": confidence,
-                "dominant_emotion": dominant_emotion,
-                "raw_scores": raw_scores,
+                "sentiment_score": analysis_result["sentiment_score"],
+                "sentiment": sentiment_label,
+                "confidence": analysis_result["confidence"],
+                "dominant_emotion": analysis_result["dominant_emotion"],
+                "raw_scores": analysis_result["raw_scores"],
             }
 
             # Cache the result

@@ -46,6 +46,9 @@ async def analyze_text(
     """
     try:
         result = await moderation_service.analyze_text(request.text)
+        # Ensure sentiment field is present
+        if "sentiment" not in result:
+            result["sentiment"] = "neutral"  # Default sentiment if not provided
         return result
     except Exception as e:
         logger.error(f"Error in analyze_text endpoint: {str(e)}")
