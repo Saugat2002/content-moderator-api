@@ -14,7 +14,7 @@ class ModerationService:
 
     async def analyze_text(self, text: str) -> Dict[str, Any]:
         """
-        Analyze text for sentiment and toxicity using BERT.
+        Analyze text for sentiment and emotions using BERT.
         """
         try:
             # Check cache first
@@ -25,18 +25,21 @@ class ModerationService:
                 return cached_result
 
             # Perform sentiment analysis
-            sentiment_result = self.sentiment_analyzer.analyze_sentiment(text)
+            analysis_result = self.sentiment_analyzer.analyze_sentiment(text)
 
-            sentiment_score: float = cast(float, sentiment_result["sentiment_score"])
+            sentiment_score: float = cast(float, analysis_result["sentiment_score"])
+            confidence: float = cast(float, analysis_result["confidence"])
+            dominant_emotion: str = cast(str, analysis_result["dominant_emotion"])
+            raw_scores: Dict[str, float] = cast(
+                Dict[str, float], analysis_result["raw_scores"]
+            )
 
             # Prepare response
             result = {
                 "sentiment_score": sentiment_score,
-                "sentiment": self.sentiment_analyzer.get_sentiment_label(
-                    sentiment_score
-                ),
-                "confidence": sentiment_result["confidence"],
-                "raw_scores": sentiment_result["raw_scores"],
+                "confidence": confidence,
+                "dominant_emotion": dominant_emotion,
+                "raw_scores": raw_scores,
             }
 
             # Cache the result

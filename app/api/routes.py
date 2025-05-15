@@ -5,7 +5,6 @@ from app.core.security import get_api_key
 from app.services.moderation import ModerationService
 from app.services.cache import CacheService
 from app.core.config import get_settings
-import hashlib
 import logging
 
 router = APIRouter()
@@ -18,10 +17,11 @@ class TextAnalysisRequest(BaseModel):
 
 
 class TextAnalysisResponse(BaseModel):
-    toxicity_score: float
-    is_toxic: bool
     sentiment_score: float
     sentiment: str
+    confidence: float
+    dominant_emotion: str
+    raw_scores: Dict[str, float]
 
 
 async def get_moderation_service() -> ModerationService:
@@ -35,21 +35,21 @@ async def verify_api_key(x_api_key: str = Header(...)) -> None:
         raise HTTPException(status_code=401, detail="Invalid API key")
 
 
-@router.post("/analyze")
+@router.post("/analyze", response_model=TextAnalysisResponse)
 async def analyze_text(
-    text: Dict[str, str],
+    request: TextAnalysisRequest,
     moderation_service: ModerationService = Depends(get_moderation_service),
     _: None = Depends(verify_api_key),
 ) -> Dict[str, Any]:
     """
-    Analyze text for sentiment using BERT.
+    Analyze text for sentiment and emotions using BERT.
     """
     try:
-        result = await moderation_service.analyze_text(text["text"])
+        result = await moderation_service.analyze_text(request.text)
         return result
     except Exception as e:
         logger.error(f"Error in analyze_text endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail="Analysis failed")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/health")
