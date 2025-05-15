@@ -25,6 +25,9 @@ A FastAPI-based content moderation service that analyzes text for toxicity and s
   - CI/CD pipeline
   - Type hints and validation
   - Pre-commit hooks
+  - MyPy type checking
+  - Pytest test framework
+  - Coverage reporting
 
 ## Prerequisites
 
@@ -48,7 +51,11 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 3. Install dependencies:
 ```bash
-pip install -r requirements.txt
+# Install base requirements
+pip install -r requirements-base.txt
+
+# Install additional requirements (optional)
+pip install -r requirements-additional.txt
 ```
 
 4. Set up environment variables:
@@ -77,6 +84,13 @@ uvicorn app.main:app --reload
 
 ### Docker Deployment
 
+1. Build and run using Docker Compose:
+```bash
+docker-compose up --build
+```
+
+Or manually:
+
 1. Build the Docker image:
 ```bash
 docker build -t content-moderator .
@@ -91,14 +105,14 @@ docker run -p 8000:8000 content-moderator
 
 ### Running Tests
 
-1. Install test dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-2. Run the test suite:
+1. Run the test suite:
 ```bash
 pytest -v
+```
+
+2. Generate coverage report:
+```bash
+pytest --cov=app tests/
 ```
 
 ### Code Quality
@@ -109,10 +123,16 @@ pip install pre-commit
 pre-commit install
 ```
 
-2. Run linting:
+2. Run code quality checks:
 ```bash
+# Format code
 black .
+
+# Type checking
 mypy .
+
+# Run pre-commit hooks on all files
+pre-commit run --all-files
 ```
 
 ## API Usage
@@ -163,6 +183,18 @@ content-moderator/
 ├── .pre-commit-config.yaml
 ├── docker-compose.yml
 ├── Dockerfile
-├── requirements.txt
+├── requirements-base.txt
+├── requirements-additional.txt
+├── pytest.ini
 └── README.md
 ```
+
+### Configuration Files
+
+- `.pre-commit-config.yaml`: Pre-commit hooks configuration
+- `pytest.ini`: Pytest configuration
+- `docker-compose.yml`: Docker Compose configuration
+- `Dockerfile`: Docker image configuration
+- `.env.example`: Example environment variables
+- `requirements-base.txt`: Core project dependencies
+- `requirements-additional.txt`: Optional development dependencies

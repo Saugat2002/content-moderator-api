@@ -11,7 +11,6 @@ class Settings(BaseSettings):
     # API Configuration
     API_KEY: str = os.getenv("API_KEY", "")
     API_KEY_NAME: str = "X-API-Key"
-    MODEL_THRESHOLD: float = float(os.getenv("MODEL_THRESHOLD", "0.5"))
 
     # Redis Configuration
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
