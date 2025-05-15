@@ -46,4 +46,4 @@ app.include_router(router, prefix="/api/v1")
 @app.get("/")
 async def root(request: Request):
     logger.info("Serving root endpoint")
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")

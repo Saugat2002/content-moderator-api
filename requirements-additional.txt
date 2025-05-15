@@ -1,1 +1,3 @@
 hf_xet
+pytest
+pytest-cov
