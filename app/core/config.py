@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 from typing import Optional, List
 from dotenv import load_dotenv
+from typing import cast
 import os
 
 load_dotenv()
@@ -11,13 +12,13 @@ class Settings(BaseSettings):
     # API Configuration
     API_KEY: str = os.getenv("API_KEY", "")
     API_KEY_NAME: str = "X-API-Key"
+    PORT: int = cast(int, os.getenv("PORT", 8000))
 
     # Redis Configuration
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     # Server Configuration
     HOST: str = "0.0.0.0"
-    PORT: int = 8000
     DEBUG: bool = False
 
     # Rate Limiting

@@ -27,6 +27,8 @@ app = FastAPI(
     version="1.0.0",
 )
 
+port = settings.PORT
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
